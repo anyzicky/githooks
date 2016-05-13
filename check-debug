@@ -1,0 +1,51 @@
+#!/usr/bin/env php
+<?php
+/**
+* Хук для проверки
+* отладочной информации
+* в PHP файлах перед коммитом
+* (да да я знаю что на баше менее колхозно)
+* author: Suraev Denis
+*/
+
+function getExt($filename) {
+    return pathinfo($filename, PATHINFO_EXTENSION);
+}
+
+$arBlackList = array(
+    'var_dump',
+    'var_export',
+    'debug_print',
+    'dump'
+);
+
+
+$arCheckFile = array(
+    'php',
+    'phtml',
+    'php5'
+);
+
+$result = 0;
+$stopwords = implode('|',$arBlackList);
+exec('git diff --cached --name-only', $arFiles);
+
+foreach($arFiles as $file) {
+    if(file_exists($file) && in_array(getExt($file), $arCheckFile)) {//потому что могли удалить
+        
+        //тут проверим на отладочные функции
+        if(preg_match("/".$stopwords."/", file_get_contents($file), $match)) {
+            echo "[-] $file contain stop word: " . implode(', ', $match) . "\n\r";
+            $result=1;
+        }
+        
+        
+    }
+}
+
+if($result != 0) {
+    print("[-] Abort commit! Check you files for debug code.\n\r");
+    exit($result);
+}
+
+

@@ -1,0 +1,42 @@
+#!/usr/bin/env php
+<?php
+/**
+* Хук для проверки
+* синтаксических ошибок
+* в PHP файлах перед коммитом
+* (да да я знаю что на баше менее колхозно)
+* author: Suraev Denis
+*/
+
+function getExt($filename) {
+    return pathinfo($filename, PATHINFO_EXTENSION);
+}
+
+$arCheckFile = array(
+    'php',
+    'phtml',
+    'php5'
+);
+
+$result = 0;
+
+exec('git diff --cached --name-only', $arFiles);
+
+foreach($arFiles as $file) {
+    if(file_exists($file) && in_array(getExt($file), $arCheckFile)) {//потому что могли удалить
+        
+        //проверим синтаксические ошибки
+        exec("php -l ".$file, $msg, $out);
+        if($out != 0){
+            $result=1;
+        }
+        
+    }
+}
+
+if($result != 0) {
+    print("[-] Abort commit! Check you files for correct code.\n\r");
+    exit($result);
+}
+
+
