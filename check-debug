@@ -16,6 +16,8 @@ $arBlackList = array(
     'var_dump',
     'var_export',
     'debug_print',
+    'writeToFile',
+    'file_put_contents',
     'dump'
 );
 
@@ -32,14 +34,14 @@ exec('git diff --cached --name-only', $arFiles);
 
 foreach($arFiles as $file) {
     if(file_exists($file) && in_array(getExt($file), $arCheckFile)) {//потому что могли удалить
-        
+
         //тут проверим на отладочные функции
         if(preg_match("/".$stopwords."/", file_get_contents($file), $match)) {
             echo "[-] $file contain stop word: " . implode(', ', $match) . "\n\r";
             $result=1;
         }
-        
-        
+
+
     }
 }
 
